@@ -15,19 +15,44 @@ mongoose.connect(url, { useUnifiedTopology: true,useNewUrlParser: true }).then((
 //Create our schema then naturally modelize it
 //id : false because we don't specially want id as it already exist 
 const schema = new mongoose.Schema({}, {id: false}, 'movies');
-const movies = mongoose.model('movies', schema);
+const movies_model = mongoose.model('movies', schema);
 
 // Use express to create gave routing to our project
 const app = express();
 const router = express.Router();
 
-console.log("test")
+
+//Add data to our database
+async function collect(req, res) {
+  try {
+    const id = req.params.id;
+    const movies = await imdb(id);
+
+    await movies_model.insertMany(movies);
+
+    res.status(200).json({
+      Total: movies.length
+     });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err
+    });
+  }
+}
+router.route('/movies/database').get(collect);
+
+
+
+
 
 router.get('/', (req, res) => {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.write('<h1>Hello from Express.js!Hello</h1>');
-    res.end();
+  res.writeHead(200, { 'Content-Type': 'text/html' });
+  res.write('<h1>Welcome to the Denzel project of Jean-Louis Delebecque</h1>');
+  res.write('<p>Here are netlify url of different fucntionnalities offert by this web app: ');
+  res.end();
   });
+
   router.get('/another', (req, res) => res.json({ route: req.originalUrl }));
   router.post('/', (req, res) => res.json({ postBody: req.body }));
   
